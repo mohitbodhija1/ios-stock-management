@@ -32,6 +32,11 @@ export default function ProductsScreen() {
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
+      <View style={styles.backdrop}>
+        <View style={styles.blueAura} />
+        <View style={styles.goldAura} />
+        <View style={styles.tealAura} />
+      </View>
       <ScrollView contentContainerStyle={styles.content}>
         <View style={styles.headerRow}>
           <View>
@@ -107,11 +112,15 @@ export default function ProductsScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#f2f2f7' },
+  container: { flex: 1, backgroundColor: '#f5f1e8' },
+  backdrop: { ...StyleSheet.absoluteFillObject, backgroundColor: '#f5f1e8' },
+  blueAura: { position: 'absolute', width: 320, height: 320, borderRadius: 160, backgroundColor: 'rgba(137, 207, 240, 0.35)', top: -30, right: -80 },
+  goldAura: { position: 'absolute', width: 240, height: 240, borderRadius: 120, backgroundColor: 'rgba(255, 214, 140, 0.28)', bottom: 80, left: -70 },
+  tealAura: { position: 'absolute', width: 240, height: 240, borderRadius: 120, backgroundColor: 'rgba(141, 211, 199, 0.2)', bottom: 180, right: -50 },
   content: { padding: 16, gap: 12, paddingBottom: 28 },
   headerRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end', gap: 12 },
-  heading: { fontSize: 34, fontWeight: '700', letterSpacing: 0.3 },
-  subheading: { color: '#8e8e93' },
+  heading: { fontSize: 34, fontWeight: '700', letterSpacing: 0.3, color: '#111827' },
+  subheading: { color: '#6b7280' },
   addBtn: { backgroundColor: '#007aff', paddingHorizontal: 12, paddingVertical: 9, borderRadius: 10 },
   addBtnText: { color: '#fff', fontWeight: '600' },
   input: { borderWidth: 1, borderColor: '#ebebf0', borderRadius: 10, paddingHorizontal: 10, paddingVertical: 9, backgroundColor: '#fafafa' },
@@ -119,11 +128,11 @@ const styles = StyleSheet.create({
   primaryText: { color: '#fff', textAlign: 'center', fontWeight: '600' },
   secondaryBtn: { backgroundColor: '#eef0f3', paddingVertical: 10, paddingHorizontal: 16, borderRadius: 10, marginTop: 4, flex: 1 },
   secondaryBtnText: { color: '#111827', textAlign: 'center', fontWeight: '600' },
-  list: { borderWidth: 1, borderColor: '#ebebf0', borderRadius: 14, backgroundColor: '#fff' },
-  row: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 12, borderBottomWidth: 1, borderBottomColor: '#f2f2f7' },
+  list: { borderWidth: 1, borderColor: 'rgba(255,255,255,0.76)', borderRadius: 14, backgroundColor: 'rgba(255,255,255,0.5)' },
+  row: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 12, borderBottomWidth: 1, borderBottomColor: 'rgba(226,232,240,0.7)' },
   rowInfo: { flex: 1 },
-  rowTitle: { fontWeight: '600' },
-  muted: { color: '#8e8e93', fontSize: 12, marginTop: 2 },
+  rowTitle: { fontWeight: '600', color: '#111827' },
+  muted: { color: '#6b7280', fontSize: 12, marginTop: 2 },
   delete: { color: '#dc2626', fontWeight: '600' },
   modalBackdrop: { flex: 1, backgroundColor: 'rgba(0,0,0,0.32)', justifyContent: 'flex-end' },
   modalCard: { backgroundColor: '#fff', borderTopLeftRadius: 18, borderTopRightRadius: 18, padding: 16, gap: 10 },

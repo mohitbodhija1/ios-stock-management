@@ -58,6 +58,11 @@ export default function MovementsScreen() {
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
+      <View style={styles.backdrop}>
+        <View style={styles.blueAura} />
+        <View style={styles.goldAura} />
+        <View style={styles.tealAura} />
+      </View>
       <ScrollView contentContainerStyle={styles.content}>
         <Text style={styles.heading}>Stock Movements</Text>
         <Text style={styles.subheading}>Record stock in, out, and transfers</Text>
@@ -181,29 +186,33 @@ export default function MovementsScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#f2f2f7' },
+  container: { flex: 1, backgroundColor: '#f5f1e8' },
+  backdrop: { ...StyleSheet.absoluteFillObject, backgroundColor: '#f5f1e8' },
+  blueAura: { position: 'absolute', width: 320, height: 320, borderRadius: 160, backgroundColor: 'rgba(137, 207, 240, 0.35)', top: -30, right: -80 },
+  goldAura: { position: 'absolute', width: 240, height: 240, borderRadius: 120, backgroundColor: 'rgba(255, 214, 140, 0.28)', bottom: 80, left: -70 },
+  tealAura: { position: 'absolute', width: 240, height: 240, borderRadius: 120, backgroundColor: 'rgba(141, 211, 199, 0.2)', bottom: 180, right: -50 },
   content: { padding: 16, gap: 12, paddingBottom: 28 },
-  heading: { fontSize: 34, fontWeight: '700', letterSpacing: 0.3 },
-  subheading: { color: '#8e8e93' },
-  form: { borderWidth: 1, borderColor: '#ebebf0', borderRadius: 14, padding: 12, gap: 8, backgroundColor: '#fff' },
+  heading: { fontSize: 34, fontWeight: '700', letterSpacing: 0.3, color: '#111827' },
+  subheading: { color: '#6b7280' },
+  form: { borderWidth: 1, borderColor: 'rgba(255,255,255,0.76)', borderRadius: 14, padding: 12, gap: 8, backgroundColor: 'rgba(255,255,255,0.5)' },
   tabRow: { flexDirection: 'row', gap: 8 },
-  tabBtn: { flex: 1, borderWidth: 1, borderColor: '#d1d5db', borderRadius: 10, paddingVertical: 8, backgroundColor: '#fff' },
+  tabBtn: { flex: 1, borderWidth: 1, borderColor: '#d1d5db', borderRadius: 10, paddingVertical: 8, backgroundColor: 'rgba(255,255,255,0.65)' },
   tabBtnActive: { backgroundColor: '#007aff', borderColor: '#007aff' },
   tabText: { textAlign: 'center', fontWeight: '600' },
   tabTextActive: { color: '#fff' },
-  input: { borderWidth: 1, borderColor: '#ebebf0', borderRadius: 10, paddingHorizontal: 10, paddingVertical: 9, backgroundColor: '#fafafa' },
+  input: { borderWidth: 1, borderColor: '#ebebf0', borderRadius: 10, paddingHorizontal: 10, paddingVertical: 9, backgroundColor: 'rgba(255,255,255,0.65)' },
   selectText: { color: '#111827' },
-  selectPlaceholder: { color: '#8e8e93' },
-  dropdown: { borderWidth: 1, borderColor: '#ebebf0', borderRadius: 10, overflow: 'hidden', backgroundColor: '#fff' },
-  dropdownItem: { paddingHorizontal: 10, paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: '#f2f2f7' },
+  selectPlaceholder: { color: '#6b7280' },
+  dropdown: { borderWidth: 1, borderColor: '#ebebf0', borderRadius: 10, overflow: 'hidden', backgroundColor: 'rgba(255,255,255,0.9)' },
+  dropdownItem: { paddingHorizontal: 10, paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: 'rgba(226,232,240,0.7)' },
   primaryBtn: { backgroundColor: '#007aff', paddingVertical: 10, borderRadius: 10, marginTop: 4 },
   primaryText: { color: '#fff', textAlign: 'center', fontWeight: '600' },
-  hint: { fontSize: 12, color: '#8e8e93' },
+  hint: { fontSize: 12, color: '#6b7280' },
   error: { color: '#dc2626', fontSize: 12 },
-  list: { borderWidth: 1, borderColor: '#ebebf0', borderRadius: 14, padding: 12, gap: 8, backgroundColor: '#fff' },
+  list: { borderWidth: 1, borderColor: 'rgba(255,255,255,0.76)', borderRadius: 14, padding: 12, gap: 8, backgroundColor: 'rgba(255,255,255,0.5)' },
   sectionTitle: { fontSize: 16, fontWeight: '700' },
-  historyRow: { flexDirection: 'row', justifyContent: 'space-between', borderBottomWidth: 1, borderBottomColor: '#f2f2f7', paddingVertical: 8 },
-  rowTitle: { fontWeight: '600' },
+  historyRow: { flexDirection: 'row', justifyContent: 'space-between', borderBottomWidth: 1, borderBottomColor: 'rgba(226,232,240,0.7)', paddingVertical: 8 },
+  rowTitle: { fontWeight: '600', color: '#111827' },
   qty: { fontWeight: '700', textAlign: 'right' },
-  muted: { color: '#8e8e93', fontSize: 12 },
+  muted: { color: '#6b7280', fontSize: 12 },
 });

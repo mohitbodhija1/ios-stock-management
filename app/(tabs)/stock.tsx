@@ -8,6 +8,11 @@ export default function StockOverviewScreen() {
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
+      <View style={styles.backdrop}>
+        <View style={styles.blueAura} />
+        <View style={styles.goldAura} />
+        <View style={styles.tealAura} />
+      </View>
       <ScrollView contentContainerStyle={styles.content}>
         <Text style={styles.heading}>Stock Overview</Text>
         <Text style={styles.subheading}>Current inventory across all godowns</Text>
@@ -49,15 +54,19 @@ export default function StockOverviewScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#f2f2f7' },
+  container: { flex: 1, backgroundColor: '#f5f1e8' },
+  backdrop: { ...StyleSheet.absoluteFillObject, backgroundColor: '#f5f1e8' },
+  blueAura: { position: 'absolute', width: 320, height: 320, borderRadius: 160, backgroundColor: 'rgba(137, 207, 240, 0.35)', top: -30, right: -80 },
+  goldAura: { position: 'absolute', width: 240, height: 240, borderRadius: 120, backgroundColor: 'rgba(255, 214, 140, 0.28)', bottom: 80, left: -70 },
+  tealAura: { position: 'absolute', width: 240, height: 240, borderRadius: 120, backgroundColor: 'rgba(141, 211, 199, 0.2)', bottom: 180, right: -50 },
   content: { padding: 16, gap: 12, paddingBottom: 24 },
-  heading: { fontSize: 34, fontWeight: '700', letterSpacing: 0.3 },
-  subheading: { color: '#8e8e93' },
-  table: { borderWidth: 1, borderColor: '#ebebf0', borderRadius: 14, overflow: 'hidden', backgroundColor: '#fff' },
-  row: { flexDirection: 'row', borderBottomWidth: 1, borderBottomColor: '#f2f2f7' },
-  header: { backgroundColor: '#fafafa' },
-  cell: { flex: 1, padding: 10, fontSize: 12, textAlign: 'center' },
+  heading: { fontSize: 34, fontWeight: '700', letterSpacing: 0.3, color: '#111827' },
+  subheading: { color: '#6b7280' },
+  table: { borderWidth: 1, borderColor: 'rgba(255,255,255,0.76)', borderRadius: 14, overflow: 'hidden', backgroundColor: 'rgba(255,255,255,0.5)' },
+  row: { flexDirection: 'row', borderBottomWidth: 1, borderBottomColor: 'rgba(226,232,240,0.7)' },
+  header: { backgroundColor: 'rgba(255,255,255,0.6)' },
+  cell: { flex: 1, padding: 10, fontSize: 12, textAlign: 'center', color: '#111827' },
   productCell: { flex: 2, textAlign: 'left' },
-  headerText: { fontWeight: '700' },
-  total: { fontWeight: '700' },
+  headerText: { fontWeight: '700', color: '#111827' },
+  total: { fontWeight: '700', color: '#111827' },
 });

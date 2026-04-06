@@ -91,6 +91,9 @@ export default function SetupScreen() {
     <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
       <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
         <View style={styles.content}>
+          <View style={styles.bgBlue} />
+          <View style={styles.bgGold} />
+          <View style={styles.bgTeal} />
           <Pressable style={styles.backBtn} onPress={goBack}>
             <ArrowLeft size={18} color="#0f172a" />
             <Text style={styles.backText}>Back</Text>
@@ -110,8 +113,10 @@ export default function SetupScreen() {
           </View>
 
           <View style={styles.header}>
-            <View style={[styles.headerIcon, { backgroundColor: current.tone }]}>
-              <CurrentIcon size={20} color="#ffffff" />
+            <View style={styles.headerIconShell}>
+              <View style={[styles.headerIcon, { backgroundColor: current.tone }]}>
+                <CurrentIcon size={20} color="#ffffff" />
+              </View>
             </View>
             <Text style={styles.title}>{current.title}</Text>
             <Text style={styles.subtitle}>{current.subtitle}</Text>
@@ -214,35 +219,77 @@ export default function SetupScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#fff8ef' },
+  container: { flex: 1, backgroundColor: '#f5f1e8' },
   flex: { flex: 1 },
-  content: { flex: 1, padding: 20, gap: 16 },
+  content: { flex: 1, padding: 20, gap: 16, position: 'relative' },
+  bgBlue: {
+    position: 'absolute',
+    width: 280,
+    height: 280,
+    borderRadius: 140,
+    backgroundColor: 'rgba(153, 220, 245, 0.35)',
+    top: 20,
+    right: -60,
+  },
+  bgGold: {
+    position: 'absolute',
+    width: 220,
+    height: 220,
+    borderRadius: 110,
+    backgroundColor: 'rgba(255, 214, 140, 0.28)',
+    bottom: 40,
+    left: -60,
+  },
+  bgTeal: {
+    position: 'absolute',
+    width: 260,
+    height: 260,
+    borderRadius: 130,
+    backgroundColor: 'rgba(141, 211, 199, 0.22)',
+    bottom: 170,
+    right: -50,
+  },
   backBtn: { flexDirection: 'row', alignItems: 'center', gap: 8, alignSelf: 'flex-start' },
   backText: { color: '#0f172a', fontWeight: '700' },
   progressRow: { flexDirection: 'row', gap: 8 },
-  progressDot: { flex: 1, height: 8, borderRadius: 999, backgroundColor: '#eadfd0' },
+  progressDot: { flex: 1, height: 8, borderRadius: 999, backgroundColor: 'rgba(224, 229, 232, 0.9)' },
   progressDotActive: { backgroundColor: '#1473e6' },
   progressDotDone: { backgroundColor: '#7db4f1' },
   header: { gap: 10 },
-  headerIcon: { width: 48, height: 48, borderRadius: 16, alignItems: 'center', justifyContent: 'center' },
+  headerIconShell: {
+    width: 58,
+    height: 58,
+    borderRadius: 29,
+    backgroundColor: 'rgba(255,255,255,0.52)',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.8)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  headerIcon: { width: 46, height: 46, borderRadius: 23, alignItems: 'center', justifyContent: 'center' },
   title: { fontSize: 30, lineHeight: 36, fontWeight: '900', color: '#0f172a', letterSpacing: -0.9 },
   subtitle: { fontSize: 15, lineHeight: 22, color: '#64748b' },
   card: {
     flex: 1,
-    backgroundColor: '#ffffff',
+    backgroundColor: 'rgba(255,255,255,0.44)',
     borderRadius: 28,
     padding: 18,
     borderWidth: 1,
-    borderColor: '#efdfca',
+    borderColor: 'rgba(255,255,255,0.76)',
     gap: 12,
     justifyContent: 'center',
+    shadowColor: '#0f172a',
+    shadowOpacity: 0.05,
+    shadowRadius: 14,
+    shadowOffset: { width: 0, height: 8 },
+    elevation: 3,
   },
   input: {
     minHeight: 54,
     borderRadius: 18,
     borderWidth: 1,
-    borderColor: '#e5dccf',
-    backgroundColor: '#fcfaf7',
+    borderColor: 'rgba(255,255,255,0.86)',
+    backgroundColor: 'rgba(255,255,255,0.56)',
     paddingHorizontal: 15,
     color: '#0f172a',
     fontSize: 15,
@@ -252,9 +299,9 @@ const styles = StyleSheet.create({
   reviewCard: {
     borderRadius: 20,
     padding: 14,
-    backgroundColor: '#f8fafc',
+    backgroundColor: 'rgba(255,255,255,0.5)',
     borderWidth: 1,
-    borderColor: '#e2e8f0',
+    borderColor: 'rgba(255,255,255,0.78)',
     gap: 4,
   },
   reviewLabel: { fontSize: 12, fontWeight: '800', color: '#64748b', textTransform: 'uppercase', letterSpacing: 0.8 },
@@ -264,14 +311,19 @@ const styles = StyleSheet.create({
   error: { color: '#dc2626', fontSize: 13, fontWeight: '700' },
   errorSpacer: { height: 18 },
   primaryBtn: {
-    backgroundColor: '#1473e6',
-    borderRadius: 22,
-    minHeight: 58,
+    backgroundColor: '#0b6aa8',
+    borderRadius: 999,
+    minHeight: 60,
     paddingHorizontal: 18,
     alignItems: 'center',
     justifyContent: 'center',
     flexDirection: 'row',
     gap: 10,
+    shadowColor: '#0b6aa8',
+    shadowOpacity: 0.28,
+    shadowRadius: 14,
+    shadowOffset: { width: 0, height: 8 },
+    elevation: 5,
   },
   primaryBtnText: { color: '#ffffff', fontSize: 16, fontWeight: '800' },
 });

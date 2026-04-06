@@ -10,6 +10,11 @@ export default function DashboardScreen() {
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
+      <View style={styles.backdrop}>
+        <View style={styles.blueAura} />
+        <View style={styles.goldAura} />
+        <View style={styles.tealAura} />
+      </View>
       <ScrollView contentContainerStyle={styles.content}>
         <Text style={styles.heading}>Dashboard</Text>
         <Text style={styles.subheading}>Overview of your inventory</Text>
@@ -66,18 +71,22 @@ export default function DashboardScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#f2f2f7' },
+  container: { flex: 1, backgroundColor: '#f5f1e8' },
+  backdrop: { ...StyleSheet.absoluteFillObject, backgroundColor: '#f5f1e8' },
+  blueAura: { position: 'absolute', width: 320, height: 320, borderRadius: 160, backgroundColor: 'rgba(137, 207, 240, 0.35)', top: -30, right: -80 },
+  goldAura: { position: 'absolute', width: 240, height: 240, borderRadius: 120, backgroundColor: 'rgba(255, 214, 140, 0.28)', bottom: 80, left: -70 },
+  tealAura: { position: 'absolute', width: 240, height: 240, borderRadius: 120, backgroundColor: 'rgba(141, 211, 199, 0.2)', bottom: 180, right: -50 },
   content: { padding: 16, gap: 12, paddingBottom: 24 },
-  heading: { fontSize: 34, fontWeight: '700', letterSpacing: 0.3 },
+  heading: { fontSize: 34, fontWeight: '700', letterSpacing: 0.3, color: '#111827' },
   subheading: { color: '#6b7280', marginBottom: 2 },
   row: { flexDirection: 'row', gap: 12 },
-  card: { flex: 1, padding: 16, borderRadius: 14, borderWidth: 1, borderColor: '#ebebf0', backgroundColor: '#fff' },
-  cardLabel: { color: '#8e8e93', marginBottom: 6 },
-  cardValue: { fontSize: 22, fontWeight: '700' },
-  panel: { marginTop: 8, padding: 14, borderRadius: 14, borderWidth: 1, borderColor: '#ebebf0', backgroundColor: '#fff', gap: 10 },
-  panelTitle: { fontSize: 16, fontWeight: '600' },
-  movementRow: { flexDirection: 'row', justifyContent: 'space-between', borderBottomWidth: 1, borderBottomColor: '#f2f2f7', paddingVertical: 9 },
-  movementName: { fontWeight: '600' },
+  card: { flex: 1, padding: 16, borderRadius: 14, borderWidth: 1, borderColor: 'rgba(255,255,255,0.76)', backgroundColor: 'rgba(255,255,255,0.5)' },
+  cardLabel: { color: '#6b7280', marginBottom: 6 },
+  cardValue: { fontSize: 22, fontWeight: '700', color: '#111827' },
+  panel: { marginTop: 8, padding: 14, borderRadius: 14, borderWidth: 1, borderColor: 'rgba(255,255,255,0.76)', backgroundColor: 'rgba(255,255,255,0.5)', gap: 10 },
+  panelTitle: { fontSize: 16, fontWeight: '600', color: '#111827' },
+  movementRow: { flexDirection: 'row', justifyContent: 'space-between', borderBottomWidth: 1, borderBottomColor: 'rgba(226,232,240,0.7)', paddingVertical: 9 },
+  movementName: { fontWeight: '600', color: '#111827' },
   movementQty: { textAlign: 'right', fontWeight: '700' },
-  muted: { color: '#8e8e93', fontSize: 12 },
+  muted: { color: '#6b7280', fontSize: 12 },
 });
