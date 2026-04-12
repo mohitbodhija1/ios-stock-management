@@ -55,27 +55,31 @@ export default function SetupScreen() {
     }
   };
 
-  const finishSetup = () => {
+  const finishSetup = async () => {
     const qty = Number(openingQty);
     if (!Number.isFinite(qty) || qty <= 0) {
       setError('Enter a valid opening quantity.');
       return;
     }
 
-    const godownId = addGodown({
-      name: godownName.trim(),
-      location: godownLocation.trim(),
-    });
+    try {
+      const godownId = await addGodown({
+        name: godownName.trim(),
+        location: godownLocation.trim(),
+      });
 
-    const productId = addProduct({
-      name: productName.trim(),
-      sku: sku.trim(),
-      unit: unit.trim() || 'Pieces',
-      category: category.trim(),
-    });
+      const productId = await addProduct({
+        name: productName.trim(),
+        sku: sku.trim(),
+        unit: unit.trim() || 'Pieces',
+        category: category.trim(),
+      });
 
-    addStockIn(productId, godownId, qty, 'Opening stock from onboarding');
-    router.replace('/(tabs)/stock');
+      await addStockIn(productId, godownId, qty, 'Opening stock from onboarding');
+      router.replace('/(tabs)/stock');
+    } catch (err: any) {
+      setError(err.message || 'An error occurred during setup.');
+    }
   };
 
   const goBack = () => {

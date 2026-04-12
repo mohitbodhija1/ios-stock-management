@@ -12,12 +12,16 @@ export default function GodownsScreen() {
   const [showAddModal, setShowAddModal] = useState(false);
   const [godownToDelete, setGodownToDelete] = useState<{ id: string; name: string } | null>(null);
 
-  const onAdd = () => {
+  const onAdd = async () => {
     if (!name.trim()) return;
-    addGodown({ name: name.trim(), location: location.trim() });
-    setName('');
-    setLocation('');
-    setShowAddModal(false);
+    try {
+      await addGodown({ name: name.trim(), location: location.trim() });
+      setName('');
+      setLocation('');
+      setShowAddModal(false);
+    } catch (err: any) {
+      console.error(err);
+    }
   };
 
   const confirmDeleteGodown = () => {

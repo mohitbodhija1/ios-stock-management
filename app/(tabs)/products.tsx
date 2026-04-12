@@ -14,14 +14,18 @@ export default function ProductsScreen() {
   const [showAddModal, setShowAddModal] = useState(false);
   const [productToDelete, setProductToDelete] = useState<{ id: string; name: string } | null>(null);
 
-  const onAdd = () => {
+  const onAdd = async () => {
     if (!name.trim() || !sku.trim()) return;
-    addProduct({ name: name.trim(), sku: sku.trim(), unit: unit.trim() || 'Pieces', category: category.trim() });
-    setName('');
-    setSku('');
-    setUnit('Pieces');
-    setCategory('');
-    setShowAddModal(false);
+    try {
+      await addProduct({ name: name.trim(), sku: sku.trim(), unit: unit.trim() || 'Pieces', category: category.trim() });
+      setName('');
+      setSku('');
+      setUnit('Pieces');
+      setCategory('');
+      setShowAddModal(false);
+    } catch (err: any) {
+      console.error(err);
+    }
   };
 
   const confirmDeleteProduct = () => {

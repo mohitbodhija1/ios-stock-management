@@ -1,4 +1,15 @@
-import React, { createContext, useContext, useMemo, useState } from 'react';
+import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
+
+import {
+  createGodownRecord,
+  createProductRecord,
+  createStockInRecord,
+  createStockOutRecord,
+  deleteGodownRecord,
+  deleteProductRecord,
+  fetchInventorySnapshot,
+  transferStockRecord,
+} from '@/lib/inventory-api';
 
 export interface Product {
   id: string;
@@ -7,6 +18,7 @@ export interface Product {
   unit: string;
   category: string;
   createdAt: string;
+  userId?: string | null;
 }
 
 export interface Godown {
@@ -14,23 +26,27 @@ export interface Godown {
   name: string;
   location: string;
   createdAt: string;
+  userId?: string | null;
 }
 
 export interface StockEntry {
+  id: string;
   productId: string;
   godownId: string;
   quantity: number;
+  userId?: string | null;
 }
 
 export interface StockMovement {
   id: string;
   type: 'in' | 'out' | 'transfer';
   productId: string;
-  fromGodownId?: string;
-  toGodownId?: string;
+  fromGodownId?: string | null;
+  toGodownId?: string | null;
   quantity: number;
   notes: string;
   date: string;
+  userId?: string | null;
 }
 
 interface InventoryContextValue {
@@ -38,50 +54,49 @@ interface InventoryContextValue {
   godowns: Godown[];
   stock: StockEntry[];
   movements: StockMovement[];
-  addProduct: (p: Omit<Product, 'id' | 'createdAt'>) => string;
-  deleteProduct: (id: string) => void;
-  addGodown: (g: Omit<Godown, 'id' | 'createdAt'>) => string;
-  deleteGodown: (id: string) => void;
-  addStockIn: (productId: string, godownId: string, qty: number, notes: string) => void;
-  addStockOut: (productId: string, godownId: string, qty: number, notes: string) => boolean;
-  transferStock: (productId: string, fromId: string, toId: string, qty: number, notes: string) => boolean;
+  loading: boolean;
+  isMutating: boolean;
+  error: string | null;
+  refreshInventory: () => Promise<void>;
+  addProduct: (p: Omit<Product, 'id' | 'createdAt'>) => Promise<string>;
+  deleteProduct: (id: string) => Promise<void>;
+  addGodown: (g: Omit<Godown, 'id' | 'createdAt'>) => Promise<string>;
+  deleteGodown: (id: string) => Promise<void>;
+  addStockIn: (productId: string, godownId: string, qty: number, notes: string) => Promise<void>;
+  addStockOut: (productId: string, godownId: string, qty: number, notes: string) => Promise<boolean>;
+  transferStock: (productId: string, fromId: string, toId: string, qty: number, notes: string) => Promise<boolean>;
   getStock: (productId: string, godownId: string) => number;
 }
 
-const sampleProducts: Product[] = [
-  { id: 'p1', name: 'Cement (50kg)', sku: 'CEM-50', unit: 'Bags', category: 'Building Materials', createdAt: '2025-01-15' },
-  { id: 'p2', name: 'TMT Steel Bar 12mm', sku: 'STL-12', unit: 'Pieces', category: 'Steel', createdAt: '2025-01-15' },
-  { id: 'p3', name: 'Bricks (Red)', sku: 'BRK-RED', unit: 'Pieces', category: 'Building Materials', createdAt: '2025-02-01' },
-];
-
-const sampleGodowns: Godown[] = [
-  { id: 'g1', name: 'Main Warehouse', location: 'Industrial Area, Sector 5', createdAt: '2025-01-10' },
-  { id: 'g2', name: 'Site Store - Project A', location: 'Construction Site, Phase 2', createdAt: '2025-01-20' },
-];
-
-const sampleStock: StockEntry[] = [
-  { productId: 'p1', godownId: 'g1', quantity: 500 },
-  { productId: 'p1', godownId: 'g2', quantity: 120 },
-  { productId: 'p2', godownId: 'g1', quantity: 1000 },
-  { productId: 'p3', godownId: 'g1', quantity: 5000 },
-  { productId: 'p3', godownId: 'g2', quantity: 2000 },
-];
-
-const sampleMovements: StockMovement[] = [
-  { id: 'm1', type: 'in', productId: 'p1', toGodownId: 'g1', quantity: 500, notes: 'Initial stock', date: '2025-01-15' },
-  { id: 'm2', type: 'transfer', productId: 'p1', fromGodownId: 'g1', toGodownId: 'g2', quantity: 120, notes: 'Site requirement', date: '2025-02-01' },
-];
-
 const InventoryContext = createContext<InventoryContextValue | null>(null);
 
-const uid = () => Math.random().toString(36).slice(2, 10);
-const now = () => new Date().toISOString();
-
 export function InventoryProvider({ children }: { children: React.ReactNode }) {
-  const [products, setProducts] = useState<Product[]>(sampleProducts);
-  const [godowns, setGodowns] = useState<Godown[]>(sampleGodowns);
-  const [stock, setStock] = useState<StockEntry[]>(sampleStock);
-  const [movements, setMovements] = useState<StockMovement[]>(sampleMovements);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [godowns, setGodowns] = useState<Godown[]>([]);
+  const [stock, setStock] = useState<StockEntry[]>([]);
+  const [movements, setMovements] = useState<StockMovement[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [isMutating, setIsMutating] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const refreshInventory = useCallback(async () => {
+    try {
+      setError(null);
+      const snapshot = await fetchInventorySnapshot();
+      setProducts(snapshot.products);
+      setGodowns(snapshot.godowns);
+      setStock(snapshot.stock);
+      setMovements(snapshot.movements);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Unable to load inventory data.');
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    void refreshInventory();
+  }, [refreshInventory]);
 
   const value = useMemo<InventoryContextValue>(
     () => ({
@@ -89,86 +104,156 @@ export function InventoryProvider({ children }: { children: React.ReactNode }) {
       godowns,
       stock,
       movements,
-      addProduct: (p) => {
-        const id = uid();
-        setProducts((prev) => [...prev, { ...p, id, createdAt: now() }]);
-        return id;
+      loading,
+      isMutating,
+      error,
+      refreshInventory,
+      addProduct: async (product) => {
+        setIsMutating(true);
+        try {
+          setError(null);
+          const createdProduct = await createProductRecord(product);
+          setProducts((prev) => [createdProduct, ...prev]);
+          return createdProduct.id;
+        } catch (err) {
+          const message = err instanceof Error ? err.message : 'Unable to add product.';
+          setError(message);
+          throw err;
+        } finally {
+          setIsMutating(false);
+        }
       },
-      deleteProduct: (id) => {
-        setProducts((prev) => prev.filter((p) => p.id !== id));
-        setStock((prev) => prev.filter((s) => s.productId !== id));
+      deleteProduct: async (id) => {
+        setIsMutating(true);
+        try {
+          setError(null);
+          await deleteProductRecord(id);
+          setProducts((prev) => prev.filter((product) => product.id !== id));
+          setStock((prev) => prev.filter((entry) => entry.productId !== id));
+          setMovements((prev) => prev.filter((movement) => movement.productId !== id));
+        } catch (err) {
+          const message = err instanceof Error ? err.message : 'Unable to delete product.';
+          setError(message);
+          throw err;
+        } finally {
+          setIsMutating(false);
+        }
       },
-      addGodown: (g) => {
-        const id = uid();
-        setGodowns((prev) => [...prev, { ...g, id, createdAt: now() }]);
-        return id;
+      addGodown: async (godown) => {
+        setIsMutating(true);
+        try {
+          setError(null);
+          const createdGodown = await createGodownRecord(godown);
+          setGodowns((prev) => [createdGodown, ...prev]);
+          return createdGodown.id;
+        } catch (err) {
+          const message = err instanceof Error ? err.message : 'Unable to add godown.';
+          setError(message);
+          throw err;
+        } finally {
+          setIsMutating(false);
+        }
       },
-      deleteGodown: (id) => {
-        setGodowns((prev) => prev.filter((g) => g.id !== id));
-        setStock((prev) => prev.filter((s) => s.godownId !== id));
+      deleteGodown: async (id) => {
+        setIsMutating(true);
+        try {
+          setError(null);
+          await deleteGodownRecord(id);
+          setGodowns((prev) => prev.filter((godown) => godown.id !== id));
+          setStock((prev) => prev.filter((entry) => entry.godownId !== id));
+          setMovements((prev) =>
+            prev.filter(
+              (movement) => movement.fromGodownId !== id && movement.toGodownId !== id
+            )
+          );
+        } catch (err) {
+          const message = err instanceof Error ? err.message : 'Unable to delete godown.';
+          setError(message);
+          throw err;
+        } finally {
+          setIsMutating(false);
+        }
       },
       getStock: (productId, godownId) => {
-        const entry = stock.find((s) => s.productId === productId && s.godownId === godownId);
+        const entry = stock.find((item) => item.productId === productId && item.godownId === godownId);
         return entry?.quantity ?? 0;
       },
-      addStockIn: (productId, godownId, qty, notes) => {
-        setStock((prev) => {
-          const idx = prev.findIndex((s) => s.productId === productId && s.godownId === godownId);
-          if (idx < 0) {
-            return [...prev, { productId, godownId, quantity: qty }];
+      addStockIn: async (productId, godownId, qty, notes) => {
+        setIsMutating(true);
+        try {
+          setError(null);
+          const result = await createStockInRecord(productId, godownId, qty, notes);
+          setStock((prev) => {
+            const index = prev.findIndex((item) => item.id === result.stockEntry.id);
+            if (index === -1) {
+              return [...prev, result.stockEntry];
+            }
+            return prev.map((item, itemIndex) => (itemIndex === index ? result.stockEntry : item));
+          });
+          setMovements((prev) => [result.movement, ...prev]);
+        } catch (err) {
+          const message = err instanceof Error ? err.message : 'Unable to add stock.';
+          setError(message);
+          throw err;
+        } finally {
+          setIsMutating(false);
+        }
+      },
+      addStockOut: async (productId, godownId, qty, notes) => {
+        setIsMutating(true);
+        try {
+          setError(null);
+          const result = await createStockOutRecord(productId, godownId, qty, notes);
+          if (!result) {
+            return false;
           }
-          return prev.map((s, i) => (i === idx ? { ...s, quantity: s.quantity + qty } : s));
-        });
-        setMovements((prev) => [
-          { id: uid(), type: 'in', productId, toGodownId: godownId, quantity: qty, notes, date: now() },
-          ...prev,
-        ]);
-      },
-      addStockOut: (productId, godownId, qty, notes) => {
-        const current = stock.find((s) => s.productId === productId && s.godownId === godownId);
-        if (!current || current.quantity < qty) {
-          return false;
-        }
-        setStock((prev) =>
-          prev.map((s) =>
-            s.productId === productId && s.godownId === godownId
-              ? { ...s, quantity: s.quantity - qty }
-              : s
-          )
-        );
-        setMovements((prev) => [
-          { id: uid(), type: 'out', productId, fromGodownId: godownId, quantity: qty, notes, date: now() },
-          ...prev,
-        ]);
-        return true;
-      },
-      transferStock: (productId, fromId, toId, qty, notes) => {
-        const current = stock.find((s) => s.productId === productId && s.godownId === fromId);
-        if (!current || current.quantity < qty || fromId === toId) {
-          return false;
-        }
-        setStock((prev) => {
-          const next = prev.map((s) =>
-            s.productId === productId && s.godownId === fromId
-              ? { ...s, quantity: s.quantity - qty }
-              : s
+
+          setStock((prev) =>
+            prev.map((item) => (item.id === result.stockEntry.id ? result.stockEntry : item))
           );
-          const toIdx = next.findIndex((s) => s.productId === productId && s.godownId === toId);
-          if (toIdx < 0) {
-            next.push({ productId, godownId: toId, quantity: qty });
-          } else {
-            next[toIdx] = { ...next[toIdx], quantity: next[toIdx].quantity + qty };
+          setMovements((prev) => [result.movement, ...prev]);
+          return true;
+        } catch (err) {
+          const message = err instanceof Error ? err.message : 'Unable to remove stock.';
+          setError(message);
+          throw err;
+        } finally {
+          setIsMutating(false);
+        }
+      },
+      transferStock: async (productId, fromId, toId, qty, notes) => {
+        setIsMutating(true);
+        try {
+          setError(null);
+          const result = await transferStockRecord(productId, fromId, toId, qty, notes);
+          if (!result) {
+            return false;
           }
-          return next;
-        });
-        setMovements((prev) => [
-          { id: uid(), type: 'transfer', productId, fromGodownId: fromId, toGodownId: toId, quantity: qty, notes, date: now() },
-          ...prev,
-        ]);
-        return true;
+
+          setStock((prev) => {
+            const next = [...prev];
+            [result.fromStockEntry, result.toStockEntry].forEach((entry) => {
+              const index = next.findIndex((item) => item.id === entry.id);
+              if (index === -1) {
+                next.push(entry);
+              } else {
+                next[index] = entry;
+              }
+            });
+            return next;
+          });
+          setMovements((prev) => [result.movement, ...prev]);
+          return true;
+        } catch (err) {
+          const message = err instanceof Error ? err.message : 'Unable to transfer stock.';
+          setError(message);
+          throw err;
+        } finally {
+          setIsMutating(false);
+        }
       },
     }),
-    [godowns, movements, products, stock]
+    [error, godowns, isMutating, loading, movements, products, refreshInventory, stock]
   );
 
   return <InventoryContext.Provider value={value}>{children}</InventoryContext.Provider>;
