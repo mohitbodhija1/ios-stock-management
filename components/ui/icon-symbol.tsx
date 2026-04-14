@@ -1,29 +1,35 @@
-// Fallback for using MaterialIcons on Android and web.
-
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { SymbolWeight, SymbolViewProps } from 'expo-symbols';
 import { ComponentProps } from 'react';
-import { OpaqueColorValue, type StyleProp, type TextStyle } from 'react-native';
-
-type IconMapping = Record<SymbolViewProps['name'], ComponentProps<typeof MaterialIcons>['name']>;
-type IconSymbolName = keyof typeof MAPPING;
+import { OpaqueColorValue, type StyleProp, type ViewStyle, Platform } from 'react-native';
 
 /**
- * Add your SF Symbols to Material Icons mappings here.
- * - see Material Icons in the [Icons Directory](https://icons.expo.fyi).
- * - see SF Symbols in the [SF Symbols](https://developer.apple.com/sf-symbols/) app.
+ * Enhanced mapping to include Stock Management essentials.
+ * We use MaterialIcons to approximate the professional look of SF Symbols.
  */
 const MAPPING = {
+  // Navigation
   'house.fill': 'home',
   'paperplane.fill': 'send',
   'chevron.left.forwardslash.chevron.right': 'code',
   'chevron.right': 'chevron-right',
-} as IconMapping;
+  'chevron.left': 'chevron-left',
+  
+  // Stock App Specifics
+  'archivebox.fill': 'inventory',
+  'chart.bar.fill': 'bar-chart',
+  'plus.circle.fill': 'add-circle',
+  'minus.circle.fill': 'remove-circle',
+  'exclamationmark.triangle.fill': 'warning',
+  'person.crop.circle.fill': 'account-circle',
+  'list.bullet.rectangle.fill': 'view-list',
+} as const;
+
+type IconSymbolName = keyof typeof MAPPING;
 
 /**
- * An icon component that uses native SF Symbols on iOS, and Material Icons on Android and web.
- * This ensures a consistent look across platforms, and optimal resource usage.
- * Icon `name`s are based on SF Symbols and require manual mapping to Material Icons.
+ * An icon component that uses native SF Symbols on iOS, and Material Icons on Android/Web.
+ * This version is optimized for a clean, professional aesthetic.
  */
 export function IconSymbol({
   name,
@@ -34,8 +40,26 @@ export function IconSymbol({
   name: IconSymbolName;
   size?: number;
   color: string | OpaqueColorValue;
-  style?: StyleProp<TextStyle>;
+  style?: StyleProp<ViewStyle>;
   weight?: SymbolWeight;
 }) {
-  return <MaterialIcons color={color} size={size} name={MAPPING[name]} style={style} />;
+  // Material Icons can look slightly larger than SF Symbols at the same point size.
+  // We apply a tiny scale factor for visual balance on Android.
+  const adjustedSize = Platform.OS === 'android' ? size - 2 : size;
+
+  return (
+    <MaterialIcons 
+      color={color} 
+      size={adjustedSize} 
+      name={MAPPING[name]} 
+      style={[
+        { 
+          textAlign: 'center',
+          // Subtle opacity for icons makes the text labels pop more (Pro UI Tip)
+          opacity: 0.9 
+        }, 
+        style as any
+      ]} 
+    />
+  );
 }

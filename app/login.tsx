@@ -8,19 +8,22 @@ import {
   Text,
   TextInput,
   View,
+  ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { supabase } from '@/lib/supabase';
+import { IconSymbol } from '@/components/ui/icon-symbol';
 
 export default function LoginScreen() {
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const [focusedField, setFocusedField] = useState<string | null>(null);
 
   const handleSubmit = async () => {
     if (!email || !password) {
-      Alert.alert('Error', 'Please fill in all fields');
+      Alert.alert('Required', 'Please enter both email and password.');
       return;
     }
     setLoading(true);
@@ -29,19 +32,18 @@ export default function LoginScreen() {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
       } else {
-        const { error } = await supabase.auth.signUp({
-          email,
-          password,
-        });
+        const { error } = await supabase.auth.signUp({ email, password });
         if (error) throw error;
-        Alert.alert('Success', 'Check your email for a confirmation link');
+        Alert.alert('Success', 'Verification email sent! Please check your inbox.');
       }
     } catch (err: any) {
-      Alert.alert('Error', err.message);
+      Alert.alert('Login Failed', err.message);
     } finally {
       setLoading(false);
     }
   };
+
+  const accentColor = '#0f172a';
 
   return (
     <SafeAreaView style={styles.container}>
@@ -49,57 +51,75 @@ export default function LoginScreen() {
         style={styles.keyboardView}
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       >
-        <View style={styles.card}>
+        <View style={styles.innerContainer}>
+          {/* Logo & Header */}
           <View style={styles.header}>
+            <View style={styles.logoCircle}>
+              <IconSymbol name="archivebox.fill" size={32} color={accentColor} />
+            </View>
             <Text style={styles.title}>StockKeeper</Text>
-            <Text style={styles.description}>
-              {isLogin ? 'Sign in to your account' : 'Create a new account'}
+            <Text style={styles.subtitle}>
+              {isLogin ? 'Welcome back to your warehouse' : 'Start managing your inventory today'}
             </Text>
           </View>
 
+          {/* Form */}
           <View style={styles.form}>
-            <View style={styles.inputGroup}>
-              <Text style={styles.label}>Email</Text>
+            <View style={styles.inputWrapper}>
+              <Text style={[styles.label, focusedField === 'email' && { color: '#2563eb' }]}>Email Address</Text>
               <TextInput
-                style={styles.input}
-                placeholder="you@example.com"
+                style={[styles.input, focusedField === 'email' && styles.inputFocused]}
+                placeholder="you@company.com"
+                placeholderTextColor="#94a3b8"
                 value={email}
                 onChangeText={setEmail}
+                onFocus={() => setFocusedField('email')}
+                onBlur={() => setFocusedField(null)}
                 keyboardType="email-address"
                 autoCapitalize="none"
               />
             </View>
 
-            <View style={styles.inputGroup}>
-              <Text style={styles.label}>Password</Text>
+            <View style={styles.inputWrapper}>
+              <Text style={[styles.label, focusedField === 'password' && { color: '#2563eb' }]}>Password</Text>
               <TextInput
-                style={styles.input}
+                style={[styles.input, focusedField === 'password' && styles.inputFocused]}
                 placeholder="••••••••"
+                placeholderTextColor="#94a3b8"
                 value={password}
                 onChangeText={setPassword}
+                onFocus={() => setFocusedField('password')}
+                onBlur={() => setFocusedField(null)}
                 secureTextEntry
               />
             </View>
 
             <Pressable
-              style={[styles.button, loading && styles.buttonDisabled]}
+              style={({ pressed }) => [
+                styles.button,
+                { opacity: pressed || loading ? 0.8 : 1 }
+              ]}
               onPress={handleSubmit}
               disabled={loading}
             >
-              <Text style={styles.buttonText}>
-                {loading ? 'Please wait...' : isLogin ? 'Sign In' : 'Sign Up'}
-              </Text>
+              {loading ? (
+                <ActivityIndicator color="#fff" />
+              ) : (
+                <Text style={styles.buttonText}>{isLogin ? 'Sign In' : 'Create Account'}</Text>
+              )}
             </Pressable>
 
             <Pressable
-              style={styles.linkButton}
+              style={styles.toggleButton}
               onPress={() => setIsLogin(!isLogin)}
               disabled={loading}
             >
-              <Text style={styles.linkText}>
-                {isLogin
-                  ? "Don't have an account? Sign Up"
-                  : 'Already have an account? Sign In'}
+              <Text style={styles.toggleText}>
+                {isLogin ? (
+                  <>New here? <Text style={styles.toggleAction}>Create an account</Text></>
+                ) : (
+                  <>Already have an account? <Text style={styles.toggleAction}>Sign In</Text></>
+                )}
               </Text>
             </Pressable>
           </View>
@@ -112,79 +132,102 @@ export default function LoginScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f1e8',
+    backgroundColor: '#ffffff',
   },
   keyboardView: {
     flex: 1,
-    justifyContent: 'center',
-    padding: 16,
   },
-  card: {
-    backgroundColor: '#fff',
-    borderRadius: 12,
-    padding: 24,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 3,
+  innerContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    paddingHorizontal: 32,
   },
   header: {
     alignItems: 'center',
-    marginBottom: 24,
+    marginBottom: 48,
+  },
+  logoCircle: {
+    width: 72,
+    height: 72,
+    borderRadius: 24,
+    backgroundColor: '#f1f5f9',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 20,
   },
   title: {
-    fontSize: 24,
-    fontWeight: 'bold',
+    fontSize: 32,
+    fontWeight: '900',
     color: '#0f172a',
-    marginBottom: 8,
+    letterSpacing: -1,
   },
-  description: {
-    fontSize: 14,
+  subtitle: {
+    fontSize: 16,
     color: '#64748b',
+    textAlign: 'center',
+    marginTop: 8,
+    lineHeight: 22,
   },
   form: {
-    gap: 16,
+    width: '100%',
+    gap: 24,
   },
-  inputGroup: {
-    gap: 6,
+  inputWrapper: {
+    gap: 8,
   },
   label: {
     fontSize: 14,
-    fontWeight: '500',
-    color: '#0f172a',
+    fontWeight: '700',
+    color: '#475569',
+    marginLeft: 4,
   },
   input: {
+    height: 56,
+    backgroundColor: '#f8fafc',
     borderWidth: 1,
     borderColor: '#e2e8f0',
-    borderRadius: 8,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
+    borderRadius: 16,
+    paddingHorizontal: 16,
     fontSize: 16,
     color: '#0f172a',
-    backgroundColor: '#fff',
+  },
+  inputFocused: {
+    borderColor: '#2563eb',
+    backgroundColor: '#ffffff',
+    // Subtle glow effect
+    shadowColor: '#2563eb',
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.1,
+    shadowRadius: 10,
   },
   button: {
     backgroundColor: '#0f172a',
-    borderRadius: 8,
-    paddingVertical: 12,
+    height: 56,
+    borderRadius: 16,
     alignItems: 'center',
+    justifyContent: 'center',
     marginTop: 8,
-  },
-  buttonDisabled: {
-    opacity: 0.7,
+    shadowColor: '#0f172a',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 4,
   },
   buttonText: {
     color: '#fff',
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: '700',
   },
-  linkButton: {
+  toggleButton: {
     alignItems: 'center',
-    marginTop: 8,
+    marginTop: 12,
   },
-  linkText: {
-    color: '#007aff',
-    fontSize: 14,
+  toggleText: {
+    fontSize: 15,
+    color: '#64748b',
+  },
+  toggleAction: {
+    color: '#2563eb',
+    fontWeight: '700',
   },
 });

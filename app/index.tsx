@@ -1,8 +1,9 @@
 import { useRouter } from 'expo-router';
 import { ArrowRight, CalendarDays, Sparkles } from 'lucide-react-native';
-import { Image, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Image, Platform, Pressable, StyleSheet, Text, View, Dimensions } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+const { width } = Dimensions.get('window');
 const SERIF_FONT = Platform.select({ ios: 'Georgia', android: 'serif', default: 'serif' });
 const cubeImage = require('@/assets/images/box.png');
 const notebookImage = require('@/assets/images/notebook.png');
@@ -20,16 +21,16 @@ function StepCard({
 }) {
   return (
     <View style={[styles.stepCard, tone === 'cool' ? styles.stepCardCool : styles.stepCardWarm]}>
-      <View style={styles.stepChip}>
-        <Text style={styles.stepChipText}>{step}</Text>
+      <View style={styles.stepHeader}>
+        <View style={styles.stepChip}>
+          <Text style={styles.stepChipText}>{step}</Text>
+        </View>
       </View>
       <View style={styles.illustrationShell}>
         <View style={styles.illustrationGlow} />
         <Image source={imageSource} style={styles.illustrationImage} resizeMode="contain" />
       </View>
-      <View style={styles.stepFooter}>
-        <Text style={styles.stepTitle}>{title}</Text>
-      </View>
+      <Text style={styles.stepTitle}>{title}</Text>
     </View>
   );
 }
@@ -39,6 +40,7 @@ export default function LandingScreen() {
 
   return (
     <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
+      {/* Dynamic Background Auras */}
       <View style={styles.backdrop}>
         <View style={styles.blueAura} />
         <View style={styles.goldAura} />
@@ -46,31 +48,30 @@ export default function LandingScreen() {
       </View>
 
       <View style={styles.content}>
+        {/* Main Hero Section */}
         <View style={styles.heroCard}>
-          <View style={styles.topRow}>
-            <View style={styles.badge}>
-              <Sparkles size={14} color="#111827" />
-              <Text style={styles.badgeText}>Fast inventory onboarding</Text>
-            </View>
+          <View style={styles.badge}>
+            <Sparkles size={14} color="#2563eb" />
+            <Text style={styles.badgeText}>Onboarding Guided by AI</Text>
           </View>
 
           <View style={styles.headlineBlock}>
             <Text style={styles.title}>StockKeeper</Text>
             <Text style={styles.subtitle}>
-              Create your first godown, product, and opening stock in a guided setup that feels tidy from the first screen.
+              Master your inventory with a guided setup designed for clarity and speed.
             </Text>
           </View>
 
           <View style={styles.cardsRow}>
             <StepCard
-              step="Step 1"
-              title="Add godown"
+              step="01"
+              title="Add Godown"
               tone="cool"
               imageSource={cubeImage}
             />
             <StepCard
-              step="Step 2"
-              title="Create product"
+              step="02"
+              title="New Product"
               tone="warm"
               imageSource={notebookImage}
             />
@@ -78,27 +79,34 @@ export default function LandingScreen() {
 
           <View style={styles.summaryCard}>
             <View style={styles.summaryContent}>
-              <View style={styles.stepChip}>
-                <Text style={styles.stepChipText}>Step 3</Text>
+              <View style={[styles.stepChip, { backgroundColor: '#ffffff', marginBottom: 8 }]}>
+                <Text style={styles.stepChipText}>03</Text>
               </View>
-              <Text style={styles.summaryTitle}>Start maintaining stock instantly.</Text>
+              <Text style={styles.summaryTitle}>Go Live</Text>
               <Text style={styles.summaryText}>
-                We&apos;ll take you into the stock screen with your first setup already saved.
+                Your first batch is ready. Start tracking movements instantly.
               </Text>
             </View>
             <View style={styles.calendarOrb}>
-              <CalendarDays size={34} color="#2b6cb0" strokeWidth={2} />
+              <CalendarDays size={32} color="#0b6aa8" strokeWidth={1.5} />
             </View>
           </View>
         </View>
 
+        {/* Action Buttons */}
         <View style={styles.actions}>
-          <Pressable style={styles.primaryBtn} onPress={() => router.push('/setup')}>
-            <Text style={styles.primaryBtnText}>Start onboarding</Text>
+          <Pressable 
+            style={({ pressed }) => [styles.primaryBtn, pressed && { opacity: 0.9, transform: [{ scale: 0.98 }] }]} 
+            onPress={() => router.push('/setup')}
+          >
+            <Text style={styles.primaryBtnText}>Start Onboarding</Text>
             <ArrowRight size={20} color="#ffffff" />
           </Pressable>
 
-          <Pressable style={styles.secondaryBtn} onPress={() => router.replace('/(tabs)')}>
+          <Pressable 
+             style={({ pressed }) => [styles.secondaryBtn, pressed && { backgroundColor: 'rgba(255,255,255,0.6)' }]} 
+             onPress={() => router.replace('/(tabs)')}
+          >
             <Text style={styles.secondaryBtnText}>Skip for now</Text>
           </Pressable>
         </View>
@@ -108,170 +116,88 @@ export default function LandingScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#f5f1e8' },
-  backdrop: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: '#f5f1e8',
-  },
-  blueAura: {
-    position: 'absolute',
-    width: 320,
-    height: 320,
-    borderRadius: 160,
-    backgroundColor: 'rgba(137, 207, 240, 0.42)',
-    top: -20,
-    right: -70,
-  },
-  goldAura: {
-    position: 'absolute',
-    width: 260,
-    height: 260,
-    borderRadius: 130,
-    backgroundColor: 'rgba(255, 214, 140, 0.35)',
-    bottom: 70,
-    left: -80,
-  },
-  tealAura: {
-    position: 'absolute',
-    width: 260,
-    height: 260,
-    borderRadius: 130,
-    backgroundColor: 'rgba(141, 211, 199, 0.22)',
-    bottom: 170,
-    right: -50,
-  },
-  content: { flex: 1, paddingHorizontal: 18, paddingTop: 12, paddingBottom: 16, gap: 16 },
+  container: { flex: 1, backgroundColor: '#FAF9F6' },
+  backdrop: { ...StyleSheet.absoluteFillObject, overflow: 'hidden' },
+  blueAura: { position: 'absolute', width: 400, height: 400, borderRadius: 200, backgroundColor: '#E0F2FE', top: -100, right: -100, opacity: 0.6 },
+  goldAura: { position: 'absolute', width: 300, height: 300, borderRadius: 150, backgroundColor: '#FEF3C7', bottom: -50, left: -100, opacity: 0.5 },
+  tealAura: { position: 'absolute', width: 300, height: 300, borderRadius: 150, backgroundColor: '#F0FDFA', top: '40%', right: -50, opacity: 0.4 },
+  
+  content: { flex: 1, paddingHorizontal: 20, paddingVertical: 20, gap: 20 },
+  
   heroCard: {
     flex: 1,
-    borderRadius: 32,
+    borderRadius: 36,
+    padding: 24,
+    backgroundColor: 'rgba(255, 255, 255, 0.4)',
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.78)',
-    backgroundColor: 'rgba(255,250,242,0.58)',
-    padding: 20,
-    gap: 18,
-    shadowColor: '#0f172a',
-    shadowOpacity: 0.08,
-    shadowRadius: 18,
-    shadowOffset: { width: 0, height: 8 },
-    elevation: 4,
+    borderColor: 'rgba(255, 255, 255, 0.7)',
+    shadowColor: '#000',
+    shadowOpacity: 0.05,
+    shadowRadius: 20,
+    shadowOffset: { width: 0, height: 10 },
+    elevation: 5,
   },
-  topRow: { alignItems: 'flex-start' },
+  
   badge: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 999,
-    backgroundColor: 'rgba(255,255,255,0.72)',
-    borderWidth: 1,
-    borderColor: 'rgba(222, 212, 192, 0.9)',
-  },
-  badgeText: { fontSize: 12, fontWeight: '700', color: '#111827' },
-  headlineBlock: { gap: 10, paddingTop: 4 },
-  title: {
-    fontFamily: SERIF_FONT,
-    fontSize: 38,
-    lineHeight: 44,
-    color: '#111827',
-    fontWeight: '700',
-    letterSpacing: -1.1,
-  },
-  subtitle: {
-    maxWidth: '86%',
-    fontSize: 15,
-    lineHeight: 23,
-    color: '#1f2937',
-  },
-  cardsRow: { flexDirection: 'row', gap: 14 },
-  stepCard: {
-    flex: 1,
-    borderRadius: 24,
-    padding: 12,
-    borderWidth: 1.2,
-    borderColor: 'rgba(255,255,255,0.7)',
-    overflow: 'hidden',
-  },
-  stepCardCool: { backgroundColor: 'rgba(213, 236, 243, 0.5)' },
-  stepCardWarm: { backgroundColor: 'rgba(255, 237, 205, 0.52)' },
-  stepChip: {
     alignSelf: 'flex-start',
+    gap: 6,
     paddingHorizontal: 12,
     paddingVertical: 6,
-    borderRadius: 999,
-    backgroundColor: 'rgba(255,255,255,0.78)',
+    borderRadius: 12,
+    backgroundColor: '#ffffff',
     borderWidth: 1,
-    borderColor: 'rgba(230, 221, 203, 0.9)',
+    borderColor: '#E2E8F0',
+    marginBottom: 20,
   },
-  stepChipText: { fontSize: 11, fontWeight: '700', color: '#111827' },
-  illustrationShell: {
+  badgeText: { fontSize: 12, fontWeight: '700', color: '#1E293B', letterSpacing: 0.2 },
+  
+  headlineBlock: { marginBottom: 24 },
+  title: { fontFamily: SERIF_FONT, fontSize: 42, fontWeight: '800', color: '#0F172A', letterSpacing: -1.5, marginBottom: 8 },
+  subtitle: { fontSize: 16, lineHeight: 24, color: '#475569', maxWidth: '90%' },
+  
+  cardsRow: { flexDirection: 'row', gap: 16, marginBottom: 16 },
+  stepCard: {
     flex: 1,
-    minHeight: 124,
-    alignItems: 'center',
-    justifyContent: 'center',
-    position: 'relative',
+    padding: 16,
+    borderRadius: 28,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.8)',
+    shadowColor: '#000',
+    shadowOpacity: 0.03,
+    shadowRadius: 10,
+    elevation: 2,
   },
-  illustrationGlow: {
-    position: 'absolute',
-    width: 110,
-    height: 110,
-    borderRadius: 55,
-    backgroundColor: 'rgba(255,255,255,0.35)',
-  },
-  illustrationImage: {
-    width: 118,
-    height: 118,
-  },
-  stepFooter: { gap: 4 },
-  stepTitle: { fontSize: 17, fontWeight: '800', color: '#111827' },
+  stepCardCool: { backgroundColor: '#F0F9FF' },
+  stepCardWarm: { backgroundColor: '#FFFBEB' },
+  stepHeader: { marginBottom: 12 },
+  stepChip: { alignSelf: 'flex-start', paddingHorizontal: 10, paddingVertical: 4, borderRadius: 8, backgroundColor: 'rgba(255,255,255,0.9)', borderWidth: 1, borderColor: '#E2E8F0' },
+  stepChipText: { fontSize: 12, fontWeight: '800', color: '#1E293B' },
+  
+  illustrationShell: { height: 100, alignItems: 'center', justifyContent: 'center', marginBottom: 12 },
+  illustrationGlow: { position: 'absolute', width: 60, height: 60, borderRadius: 30, backgroundColor: '#fff', opacity: 0.5 },
+  illustrationImage: { width: 80, height: 80 },
+  stepTitle: { fontSize: 16, fontWeight: '800', color: '#1E293B', textAlign: 'center' },
+  
   summaryCard: {
-    borderRadius: 24,
-    backgroundColor: 'rgba(247, 250, 250, 0.58)',
-    borderWidth: 1.2,
-    borderColor: 'rgba(255,255,255,0.72)',
-    padding: 18,
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
-    minHeight: 146,
-  },
-  summaryContent: { flex: 1, gap: 8 },
-  summaryTitle: { fontSize: 18, lineHeight: 24, fontWeight: '800', color: '#111827' },
-  summaryText: { fontSize: 14, lineHeight: 21, color: '#374151' },
-  calendarOrb: {
-    width: 72,
-    height: 72,
-    borderRadius: 24,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: 'rgba(255,255,255,0.72)',
+    padding: 20,
+    borderRadius: 28,
+    backgroundColor: 'rgba(255, 255, 255, 0.5)',
     borderWidth: 1,
-    borderColor: 'rgba(221,230,238,0.9)',
+    borderColor: 'rgba(255,255,255,0.8)',
+    gap: 16,
   },
-  actions: { gap: 12 },
-  primaryBtn: {
-    minHeight: 62,
-    borderRadius: 999,
-    backgroundColor: '#0b6aa8',
-    alignItems: 'center',
-    justifyContent: 'center',
-    flexDirection: 'row',
-    gap: 10,
-    shadowColor: '#0b6aa8',
-    shadowOpacity: 0.28,
-    shadowRadius: 14,
-    shadowOffset: { width: 0, height: 8 },
-    elevation: 5,
-  },
-  primaryBtnText: { color: '#ffffff', fontSize: 18, fontWeight: '800' },
-  secondaryBtn: {
-    minHeight: 54,
-    borderRadius: 999,
-    backgroundColor: 'rgba(255,255,255,0.45)',
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.72)',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  secondaryBtnText: { color: '#6b7280', fontSize: 16, fontWeight: '500' },
+  summaryContent: { flex: 1 },
+  summaryTitle: { fontSize: 18, fontWeight: '800', color: '#0F172A', marginBottom: 4 },
+  summaryText: { fontSize: 14, color: '#64748B', lineHeight: 20 },
+  calendarOrb: { width: 64, height: 64, borderRadius: 20, backgroundColor: '#ffffff', alignItems: 'center', justifyContent: 'center', shadowColor: '#000', shadowOpacity: 0.05, shadowRadius: 10 },
+  
+  actions: { gap: 12, paddingBottom: 10 },
+  primaryBtn: { height: 64, borderRadius: 22, backgroundColor: '#0F172A', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 12, shadowColor: '#0F172A', shadowOpacity: 0.2, shadowRadius: 15, shadowOffset: { width: 0, height: 5 } },
+  primaryBtnText: { color: '#ffffff', fontSize: 18, fontWeight: '700' },
+  secondaryBtn: { height: 56, borderRadius: 20, alignItems: 'center', justifyContent: 'center', borderWeight: 1, borderColor: '#E2E8F0' },
+  secondaryBtnText: { color: '#64748B', fontSize: 16, fontWeight: '600' },
 });

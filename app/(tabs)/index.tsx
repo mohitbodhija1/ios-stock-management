@@ -1,64 +1,109 @@
 import { Link } from 'expo-router';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { Package, Store, ArrowUpRight, ArrowDownLeft, ArrowRightLeft, Activity } from 'lucide-react-native';
 
 import { useInventory } from '@/context/inventory-context';
 
 export default function DashboardScreen() {
   const { products, godowns, movements } = useInventory();
-  const recentMovements = movements.slice(0, 5);
+  
+  // Get the 5 most recent movements, sorted by date
+  const recentMovements = [...movements]
+    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+    .slice(0, 5);
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
-      <View style={styles.backdrop}>
+      {/* Dynamic Background Design */}
+      <View style={styles.backdrop} pointerEvents="none">
         <View style={styles.blueAura} />
         <View style={styles.goldAura} />
         <View style={styles.tealAura} />
       </View>
-      <ScrollView contentContainerStyle={styles.content}>
-        <Text style={styles.heading}>Dashboard</Text>
-        <Text style={styles.subheading}>Overview of your inventory</Text>
 
-        <View style={styles.row}>
+      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+        {/* Header Section */}
+        <View style={styles.header}>
+          <Text style={styles.heading}>Dashboard</Text>
+          <Text style={styles.subheading}>Real-time inventory insights</Text>
+        </View>
+
+        {/* Quick Stat Cards */}
+        <View style={styles.statsRow}>
           <Link href="/(tabs)/products" asChild>
-            <Pressable style={styles.card}>
-              <Text style={styles.cardLabel}>Products</Text>
+            <Pressable style={styles.card} android_ripple={{ color: 'rgba(0,0,0,0.05)' }}>
+              <View style={[styles.iconCircle, { backgroundColor: '#eff6ff' }]}>
+                <Package size={20} color="#2563eb" />
+              </View>
               <Text style={styles.cardValue}>{products.length}</Text>
+              <Text style={styles.cardLabel}>Total Products</Text>
             </Pressable>
           </Link>
+
           <Link href="/(tabs)/godowns" asChild>
-            <Pressable style={styles.card}>
-              <Text style={styles.cardLabel}>Godowns</Text>
+            <Pressable style={styles.card} android_ripple={{ color: 'rgba(0,0,0,0.05)' }}>
+              <View style={[styles.iconCircle, { backgroundColor: '#fef2f2' }]}>
+                <Store size={20} color="#dc2626" />
+              </View>
               <Text style={styles.cardValue}>{godowns.length}</Text>
+              <Text style={styles.cardLabel}>Warehouses</Text>
             </Pressable>
           </Link>
         </View>
 
+        {/* Activity Feed */}
         <View style={styles.panel}>
-          <Text style={styles.panelTitle}>Recent Movements</Text>
+          <View style={styles.panelHeader}>
+            <Activity size={18} color="#0f172a" />
+            <Text style={styles.panelTitle}>Recent Activity</Text>
+          </View>
+
           {recentMovements.length === 0 ? (
-            <Text style={styles.muted}>No movements yet.</Text>
+            <View style={styles.emptyState}>
+              <Text style={styles.muted}>No inventory movements recorded yet.</Text>
+            </View>
           ) : (
             recentMovements.map((m) => {
               const product = products.find((p) => p.id === m.productId);
               const from = godowns.find((g) => g.id === m.fromGodownId);
               const to = godowns.find((g) => g.id === m.toGodownId);
+              
+              const isStockIn = m.type === 'in';
+              const isStockOut = m.type === 'out';
+
               return (
                 <View key={m.id} style={styles.movementRow}>
-                  <View>
-                    <Text style={styles.movementName}>{product?.name ?? 'Unknown Product'}</Text>
-                    <Text style={styles.muted}>
-                      {m.type === 'in' && `Stock In -> ${to?.name ?? 'Unknown'}`}
-                      {m.type === 'out' && `Stock Out <- ${from?.name ?? 'Unknown'}`}
-                      {m.type === 'transfer' && `${from?.name ?? 'Unknown'} -> ${to?.name ?? 'Unknown'}`}
+                  <View style={[
+                    styles.movementIcon, 
+                    { backgroundColor: isStockIn ? '#ecfdf5' : isStockOut ? '#fff1f2' : '#f0f9ff' }
+                  ]}>
+                    {isStockIn && <ArrowDownLeft size={16} color="#10b981" />}
+                    {isStockOut && <ArrowUpRight size={16} color="#ef4444" />}
+                    {m.type === 'transfer' && <ArrowRightLeft size={16} color="#3b82f6" />}
+                  </View>
+
+                  <View style={styles.movementInfo}>
+                    <Text style={styles.movementName} numberOfLines={1}>
+                      {product?.name ?? 'Unknown Item'}
+                    </Text>
+                    <Text style={styles.muted} numberOfLines={1}>
+                      {isStockIn && `To ${to?.name}`}
+                      {isStockOut && `From ${from?.name}`}
+                      {m.type === 'transfer' && `${from?.name} → ${to?.name}`}
                     </Text>
                   </View>
-                  <View>
-                    <Text style={styles.movementQty}>
-                      {m.type === 'in' ? '+' : m.type === 'out' ? '-' : '<>'}
-                      {m.quantity}
+
+                  <View style={styles.movementMeta}>
+                    <Text style={[
+                      styles.movementQty, 
+                      { color: isStockIn ? '#059669' : isStockOut ? '#dc2626' : '#1e293b' }
+                    ]}>
+                      {isStockIn ? '+' : isStockOut ? '-' : ''}{m.quantity}
                     </Text>
-                    <Text style={styles.muted}>{new Date(m.date).toLocaleDateString()}</Text>
+                    <Text style={styles.dateText}>
+                      {new Date(m.date).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
+                    </Text>
                   </View>
                 </View>
               );
@@ -71,22 +116,63 @@ export default function DashboardScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#f5f1e8' },
-  backdrop: { ...StyleSheet.absoluteFillObject, backgroundColor: '#f5f1e8' },
-  blueAura: { position: 'absolute', width: 320, height: 320, borderRadius: 160, backgroundColor: 'rgba(137, 207, 240, 0.35)', top: -30, right: -80 },
-  goldAura: { position: 'absolute', width: 240, height: 240, borderRadius: 120, backgroundColor: 'rgba(255, 214, 140, 0.28)', bottom: 80, left: -70 },
-  tealAura: { position: 'absolute', width: 240, height: 240, borderRadius: 120, backgroundColor: 'rgba(141, 211, 199, 0.2)', bottom: 180, right: -50 },
-  content: { padding: 16, gap: 12, paddingBottom: 24 },
-  heading: { fontSize: 34, fontWeight: '700', letterSpacing: 0.3, color: '#111827' },
-  subheading: { color: '#6b7280', marginBottom: 2 },
-  row: { flexDirection: 'row', gap: 12 },
-  card: { flex: 1, padding: 16, borderRadius: 14, borderWidth: 1, borderColor: 'rgba(255,255,255,0.76)', backgroundColor: 'rgba(255,255,255,0.5)' },
-  cardLabel: { color: '#6b7280', marginBottom: 6 },
-  cardValue: { fontSize: 22, fontWeight: '700', color: '#111827' },
-  panel: { marginTop: 8, padding: 14, borderRadius: 14, borderWidth: 1, borderColor: 'rgba(255,255,255,0.76)', backgroundColor: 'rgba(255,255,255,0.5)', gap: 10 },
-  panelTitle: { fontSize: 16, fontWeight: '600', color: '#111827' },
-  movementRow: { flexDirection: 'row', justifyContent: 'space-between', borderBottomWidth: 1, borderBottomColor: 'rgba(226,232,240,0.7)', paddingVertical: 9 },
-  movementName: { fontWeight: '600', color: '#111827' },
-  movementQty: { textAlign: 'right', fontWeight: '700' },
-  muted: { color: '#6b7280', fontSize: 12 },
+  container: { flex: 1, backgroundColor: '#FAF9F6' },
+  backdrop: { ...StyleSheet.absoluteFillObject },
+  
+  // Professional Background Elements
+  blueAura: { position: 'absolute', width: 400, height: 400, borderRadius: 200, backgroundColor: 'rgba(186, 230, 253, 0.4)', top: -100, right: -100 },
+  goldAura: { position: 'absolute', width: 300, height: 300, borderRadius: 150, backgroundColor: 'rgba(254, 243, 199, 0.4)', bottom: -50, left: -100 },
+  tealAura: { position: 'absolute', width: 300, height: 300, borderRadius: 150, backgroundColor: 'rgba(204, 251, 241, 0.3)', top: '40%', right: -80 },
+
+  content: { padding: 20, gap: 20 },
+  header: { marginBottom: 10 },
+  heading: { fontSize: 36, fontWeight: '900', color: '#0f172a', letterSpacing: -1.2 },
+  subheading: { fontSize: 16, color: '#64748b', fontWeight: '500' },
+
+  statsRow: { flexDirection: 'row', gap: 16 },
+  card: { 
+    flex: 1, 
+    padding: 20, 
+    borderRadius: 24, 
+    backgroundColor: 'rgba(255, 255, 255, 0.7)', 
+    borderWidth: 1, 
+    borderColor: 'rgba(255, 255, 255, 0.8)',
+    shadowColor: '#000',
+    shadowOpacity: 0.04,
+    shadowRadius: 12,
+    elevation: 3
+  },
+  iconCircle: { width: 40, height: 40, borderRadius: 12, alignItems: 'center', justifyContent: 'center', marginBottom: 12 },
+  cardValue: { fontSize: 28, fontWeight: '900', color: '#0f172a', marginBottom: 2 },
+  cardLabel: { fontSize: 13, fontWeight: '700', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 0.5 },
+
+  panel: { 
+    backgroundColor: 'rgba(255, 255, 255, 0.7)', 
+    borderRadius: 28, 
+    padding: 20, 
+    borderWidth: 1, 
+    borderColor: 'rgba(255, 255, 255, 0.8)',
+    shadowColor: '#000',
+    shadowOpacity: 0.04,
+    shadowRadius: 15 
+  },
+  panelHeader: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 20 },
+  panelTitle: { fontSize: 18, fontWeight: '800', color: '#0f172a' },
+
+  movementRow: { 
+    flexDirection: 'row', 
+    alignItems: 'center', 
+    paddingVertical: 14, 
+    borderBottomWidth: 1, 
+    borderBottomColor: 'rgba(241, 245, 249, 0.8)' 
+  },
+  movementIcon: { width: 36, height: 36, borderRadius: 10, alignItems: 'center', justifyContent: 'center', marginRight: 12 },
+  movementInfo: { flex: 1 },
+  movementName: { fontSize: 15, fontWeight: '700', color: '#1e293b' },
+  movementMeta: { alignItems: 'flex-end' },
+  movementQty: { fontSize: 16, fontWeight: '800' },
+  dateText: { fontSize: 11, color: '#94a3b8', fontWeight: '700', marginTop: 2 },
+  
+  muted: { color: '#94a3b8', fontSize: 14, fontWeight: '500' },
+  emptyState: { paddingVertical: 30, alignItems: 'center' },
 });
