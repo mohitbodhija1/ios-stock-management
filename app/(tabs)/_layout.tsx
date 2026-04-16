@@ -42,12 +42,10 @@ export default function TabLayout() {
         },
 
         tabBarStyle: {
-          position: 'absolute', 
           height: 88,
-          borderTopWidth: 1, 
+          borderTopWidth: 1,
           borderTopColor: borderColor,
-          elevation: 0,
-          // Transparent on iOS to show blur, solid white fallback for others
+          elevation: 12,
           backgroundColor: Platform.OS === 'ios' ? 'transparent' : '#ffffff',
           paddingBottom: 24,
         },

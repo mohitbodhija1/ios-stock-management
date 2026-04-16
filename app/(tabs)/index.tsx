@@ -110,6 +110,22 @@ export default function DashboardScreen() {
             })
           )}
         </View>
+
+        {/* Reset App Storage (Dev only) */}
+        <View style={styles.devSection}>
+          <Pressable 
+            style={styles.resetButton} 
+            onPress={async () => {
+              const { resetOnboarding } = await import('@/lib/onboarding-storage');
+              await resetOnboarding();
+              // Forcing a reload or navigation back to / can be done via router
+              const { router } = await import('expo-router');
+              router.replace('/');
+            }}
+          >
+            <Text style={styles.resetButtonText}>Reset Onboarding Flow</Text>
+          </Pressable>
+        </View>
       </ScrollView>
     </SafeAreaView>
   );
@@ -175,4 +191,7 @@ const styles = StyleSheet.create({
   
   muted: { color: '#94a3b8', fontSize: 14, fontWeight: '500' },
   emptyState: { paddingVertical: 30, alignItems: 'center' },
+  devSection: { marginTop: 20, marginBottom: 40, alignItems: 'center' },
+  resetButton: { paddingVertical: 12, paddingHorizontal: 24, borderRadius: 12, backgroundColor: 'rgba(239, 68, 68, 0.08)', borderWidth: 1, borderColor: 'rgba(239, 68, 68, 0.2)' },
+  resetButtonText: { color: '#ef4444', fontWeight: '700', fontSize: 14, letterSpacing: 0.3 },
 });

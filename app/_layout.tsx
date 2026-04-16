@@ -1,26 +1,29 @@
 import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
-import { Stack, useRouter, useSegments } from 'expo-router';
+import { Stack, usePathname, useRouter, useSegments } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { View, ActivityIndicator, StyleSheet } from 'react-native';
 import 'react-native-reanimated';
 
 import { AuthProvider, useAuth } from '@/context/auth-context';
 import { InventoryProvider } from '@/context/inventory-context';
 import { useColorScheme } from '@/hooks/use-color-scheme';
+import { LogoutControl } from '@/components/logout-control';
 import { ThemedText } from '@/components/themed-text';
 import { IconSymbol } from '@/components/ui/icon-symbol';
+import { getOnboardingComplete } from '@/lib/onboarding-storage';
 
 export const unstable_settings = {
-  // Ensure that reloading on `/modal` keeps a back button present.
-  initialRouteName: '(tabs)',
+  initialRouteName: 'index',
 };
 
 function RootLayoutNav() {
   const colorScheme = useColorScheme();
   const { session, loading } = useAuth();
   const segments = useSegments();
+  const pathname = usePathname();
   const router = useRouter();
+  const [onboardingDone, setOnboardingDone] = useState<boolean | null>(null);
 
   // Optimized Theme Colors
   const isDark = colorScheme === 'dark';
@@ -28,20 +31,50 @@ function RootLayoutNav() {
   const accentColor = isDark ? '#38bdf8' : '#0f172a';
 
   useEffect(() => {
+    if (!session) {
+      setOnboardingDone(null);
+      return;
+    }
+    let cancelled = false;
+    void getOnboardingComplete().then((done) => {
+      if (!cancelled) setOnboardingDone(done);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [session]);
+
+  useEffect(() => {
     if (loading) return;
 
-    const inAuthGroup = segments[0] === 'login';
+    const inLogin = pathname === '/login';
+    const inTabs = segments[0] === '(tabs)';
 
-    if (!session && !inAuthGroup) {
-      // Redirect to login if not authenticated
-      router.replace('/login');
-    } else if (session && inAuthGroup) {
-      // Redirect to main app if authenticated
-      router.replace('/(tabs)/stock');
+    if (!session) {
+      if (!inLogin) router.replace('/login');
+      return;
     }
-  }, [session, loading, segments, router]);
 
-  if (loading) {
+    if (onboardingDone === null) return;
+
+    if (inLogin) {
+      router.replace(onboardingDone ? '/(tabs)/stock' : '/');
+      return;
+    }
+
+    const onIndex = pathname === '/' || pathname === '/index';
+
+    if (onboardingDone && onIndex) {
+      router.replace('/(tabs)/stock');
+      return;
+    }
+
+    if (!onboardingDone && inTabs) {
+      router.replace('/');
+    }
+  }, [session, loading, pathname, segments, router, onboardingDone]);
+
+  if (loading || (session && onboardingDone === null)) {
     return (
       <View style={[styles.loadingContainer, { backgroundColor }]}>
         <View style={styles.logoWrapper}>
@@ -69,8 +102,18 @@ function RootLayoutNav() {
           }}>
           <Stack.Screen name="index" options={{ headerShown: false }} />
           <Stack.Screen name="login" options={{ headerShown: false, animation: 'fade' }} />
-          <Stack.Screen name="setup" options={{ headerShown: false, gestureEnabled: false }} />
-          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+          <Stack.Screen
+            name="(tabs)"
+            options={{
+              headerShown: true,
+              headerTransparent: true,
+              headerTitle: '',
+              headerShadowVisible: false,
+              headerTintColor: isDark ? '#f8fafc' : '#0f172a',
+              headerStyle: { backgroundColor: 'transparent' },
+              headerRight: () => <LogoutControl />,
+            }}
+          />
           <Stack.Screen name="products/[productId]" options={{ headerShown: false }} />
           <Stack.Screen name="godowns/[godownId]" options={{ headerShown: false }} />
           <Stack.Screen 
